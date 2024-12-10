@@ -3,55 +3,54 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Step 1: Download the latest version of the dataset
+# Step 1: Download the dataset
 path = kagglehub.dataset_download("abcsds/pokemon")
-
-# Step 2: Load the dataset
-# Assuming the dataset is a CSV file, typically 'pokemon.csv'
-dataset_path = f"{path}/pokemon.csv"  # Replace 'pokemon.csv' with the actual file name
+dataset_path = f"{path}/Pokemon.csv"  # Update with actual file name if necessary
 pokemon_data = pd.read_csv(dataset_path)
 
-# Step 3: Explore the dataset
-print(pokemon_data.head())  # Inspect the first few rows
-print(pokemon_data.info())  # Understand data types and null values
+# Step 2: Clean and Prepare Data
+pokemon_data["Total"] = pokemon_data["HP"] + pokemon_data["Attack"] + pokemon_data["Defense"] + \
+                        pokemon_data["Sp. Atk"] + pokemon_data["Sp. Def"] + pokemon_data["Speed"]
 
-# Step 4: Create Principal Graphs
+# Step 3: Graphs
 
-# 1. Distribution of Pokémon by Type
+# 1. Distribution of Pokémon by Type (Scatter plot using circles in XY plane)
+plt.figure(figsize=(12, 8))
+type_counts = pokemon_data["Type 1"].value_counts()
+plt.scatter(range(len(type_counts)), type_counts.values, s=type_counts.values * 50, alpha=0.6, edgecolors="w")
+for i, (x, y) in enumerate(zip(range(len(type_counts)), type_counts.values)):
+    plt.text(x, y + 1, type_counts.index[i], ha='center')
+plt.title("Distribution of Pokémon by Type (Circle Scatter)")
+plt.xlabel("Type Index")
+plt.ylabel("Count")
+plt.tight_layout()
+plt.show()
+
+# 2. Top 100 Most Powerful Pokémon (Bar Chart)
+top_100 = pokemon_data.nlargest(100, "Total").sort_values("Total", ascending=False)
+plt.figure(figsize=(14, 6))
+sns.barplot(x="Total", y="Name", data=top_100, palette="viridis")
+plt.title("Top 100 Most Powerful Pokémon")
+plt.xlabel("Total Stats")
+plt.ylabel("Pokémon Name")
+plt.tight_layout()
+plt.show()
+
+# 3. Ranking of Pokémon by HP (Scatter Plot)
+plt.figure(figsize=(12, 8))
+sns.scatterplot(x="HP", y="Total", hue="Type 1", size="HP", data=pokemon_data, sizes=(20, 200), alpha=0.7)
+plt.title("Ranking of Pokémon by HP vs Total Stats")
+plt.xlabel("HP")
+plt.ylabel("Total Stats")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Type 1")
+plt.tight_layout()
+plt.show()
+
+# 4. Pokémon Distribution by Generation (Bar Chart)
 plt.figure(figsize=(10, 6))
-sns.countplot(y="Type 1", data=pokemon_data, order=pokemon_data["Type 1"].value_counts().index)
-plt.title("Distribution of Pokémon by Primary Type")
-plt.xlabel("Count")
-plt.ylabel("Type 1")
-plt.tight_layout()
-plt.show()
-
-# 2. Relationship between Attack and Defense
-plt.figure(figsize=(10, 6))
-sns.scatterplot(x="Attack", y="Defense", hue="Legendary", data=pokemon_data)
-plt.title("Attack vs Defense with Legendary Status")
-plt.xlabel("Attack")
-plt.ylabel("Defense")
-plt.tight_layout()
-plt.show()
-
-# 3. Average Stats by Primary Type
-stats_cols = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"]
-type_stats = pokemon_data.groupby("Type 1")[stats_cols].mean().sort_values("Attack", ascending=False)
-
-type_stats.plot(kind="bar", figsize=(12, 6), stacked=True)
-plt.title("Average Stats by Primary Type")
-plt.xlabel("Primary Type")
-plt.ylabel("Average Stats")
-plt.legend(title="Stat Categories")
-plt.tight_layout()
-plt.show()
-
-# 4. Count of Legendary vs Non-Legendary Pokémon
-plt.figure(figsize=(8, 6))
-sns.countplot(x="Legendary", data=pokemon_data)
-plt.title("Legendary vs Non-Legendary Pokémon")
-plt.xlabel("Legendary Status")
+sns.countplot(x="Generation", data=pokemon_data, palette="Set2")
+plt.title("Pokémon Distribution by Generation")
+plt.xlabel("Generation")
 plt.ylabel("Count")
 plt.tight_layout()
 plt.show()
